@@ -21,6 +21,25 @@ To run the Word2Vec implementation, simply clone this repository and execute the
 - urllib
 - zipfile
 
+## Text8 Dataset
+
+This project uses the Text8 dataset for natural language processing tasks. The dataset is not included in the repository to keep the repository size small. You can download the dataset using the provided Python script or by downloading it manually.
+
+### Download using Python script
+
+1. Run the `download_text8.py` script in the project folder:
+
+```bash
+python download_text8.py
+```
+This script will download the text8.zip file and save it in the text8_dataset folder. If the file already exists, it won't be downloaded again.
+
+### Manual download
+
+1. Download the text8.zip file from the following URL: http://mattmahoney.net/dc/text8.zip
+
+2. Create a folder named `text8_dataset` in the project directory and move the downloaded `text8.zip` file into it.
+
 ## Implementation Details
 
 - The text8 dataset of Wikipedia articles is downloaded and processed to create a vocabulary of words.
