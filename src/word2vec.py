@@ -2,11 +2,11 @@
 # coding: utf-8
 
 # # Word2Vec (Word Embedding)
-# 
+#
 # Implement Word2Vec algorithm to compute vector representations of words, with TensorFlow 2.0. This example is using a small chunk of Wikipedia articles to train from.
-# 
+#
 # More info: [Mikolov, Tomas et al. "Efficient Estimation of Word Representations in Vector Space.", 2013](https://arxiv.org/pdf/1301.3781.pdf)
-# 
+#
 # - Author: Aymeric Damien
 # - Project: https://github.com/aymericdamien/TensorFlow-Examples/
 
@@ -43,15 +43,8 @@ skip_window = 3 # How many words to consider left and right.
 num_skips = 2 # How many times to reuse an input to generate a label.
 num_sampled = 64 # Number of negative examples to sample.
 
-# # Download File
-# Download a small chunk of Wikipedia articles collection.
-url = 'http://mattmahoney.net/dc/text8.zip'
-data_path = 'text8.zip'
-if not os.path.exists(data_path):
-    print("Downloading the dataset... (It may take some time)")
-    filename, _ = urllib.request.urlretrieve(url, data_path)
-    print("Done!")
 # Unzip the dataset file. Text has already been processed.
+data_path = 'text8_dataset/text8.zip'
 with zipfile.ZipFile(data_path) as f:
     text_words = f.read(f.namelist()[0]).lower().split()
 
@@ -162,7 +155,7 @@ def evaluate(x_embed):
 # Define the optimizer.
 optimizer = tf.optimizers.SGD(learning_rate)
 
-# Optimization process. 
+# Optimization process.
 def run_optimization(x, y):
     with tf.device('/cpu:0'):
         # Wrap computation inside a GradientTape for automatic differentiation.
@@ -183,11 +176,11 @@ x_test = np.array([word2id[w] for w in eval_words])
 for step in range(1, num_steps + 1):
     batch_x, batch_y = next_batch(batch_size, num_skips, skip_window)
     run_optimization(batch_x, batch_y)
-    
+
     if step % display_step == 0 or step == 1:
         loss = nce_loss(get_embedding(batch_x), batch_y)
         print("step: %i, loss: %f" % (step, loss))
-        
+
     # Evaluation.
     if step % eval_step == 0 or step == 1:
         print("Evaluation...")
