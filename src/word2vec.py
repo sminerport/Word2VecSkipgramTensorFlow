@@ -36,12 +36,13 @@ eval_step = 200000
 eval_words = [b'five', b'of', b'going', b'hardware', b'american', b'britain']
 
 # Word2Vec Parameters.
-embedding_size = 200 # Dimension of the embedding vector.
-max_vocabulary_size = 50000 # Total number of different words in the vocabulary.
-min_occurrence = 10 # Remove all words that does not appears at least n times.
-skip_window = 3 # How many words to consider left and right.
-num_skips = 2 # How many times to reuse an input to generate a label.
-num_sampled = 64 # Number of negative examples to sample.
+embedding_size = 200  # Dimension of the embedding vector.
+# Total number of different words in the vocabulary.
+max_vocabulary_size = 50000
+min_occurrence = 10  # Remove all words that does not appears at least n times.
+skip_window = 3  # How many words to consider left and right.
+num_skips = 2  # How many times to reuse an input to generate a label.
+num_sampled = 64  # Number of negative examples to sample.
 
 # Unzip the dataset file. Text has already been processed.
 data_path = 'text8_dataset/text8.zip'
@@ -50,7 +51,8 @@ with zipfile.ZipFile(data_path) as f:
 
 # Build the dictionary and replace rare words with UNK token.
 count = [('UNK', -1)]
-count.extend(collections.Counter(text_words).most_common(max_vocabulary_size - 1))
+count.extend(collections.Counter(
+    text_words).most_common(max_vocabulary_size - 1))
 
 # Remove samples with less than 'min_occurrence' occurrences.
 for i in range(len(count) - 1, -1, -1):
@@ -64,7 +66,7 @@ vocabulary_size = len(count)
 
 # Assign an id to each word.
 word2id = dict()
-for i, (word, _)in enumerate(count):
+for i, (word, _) in enumerate(count):
     word2id[word] = i
 
 data = list()
@@ -85,6 +87,8 @@ print("Most common words:", count[:10])
 
 data_index = 0
 # Generate training batch for the skip-gram model.
+
+
 def next_batch(batch_size, num_skips, skip_window):
     global data_index
     assert batch_size % num_skips == 0
@@ -114,20 +118,25 @@ def next_batch(batch_size, num_skips, skip_window):
     data_index = (data_index + len(data) - span) % len(data)
     return batch, labels
 
+
 # Ensure the following ops & var are assigned on CPU
 # (some ops are not compatible on GPU).
 with tf.device('/cpu:0'):
     # Create the embedding variable (each row represent a word embedding vector).
-    embedding = tf.Variable(tf.random.normal([vocabulary_size, embedding_size]))
+    embedding = tf.Variable(tf.random.normal(
+        [vocabulary_size, embedding_size]))
     # Construct the variables for the NCE loss.
-    nce_weights = tf.Variable(tf.random.normal([vocabulary_size, embedding_size]))
+    nce_weights = tf.Variable(tf.random.normal(
+        [vocabulary_size, embedding_size]))
     nce_biases = tf.Variable(tf.zeros([vocabulary_size]))
+
 
 def get_embedding(x):
     with tf.device('/cpu:0'):
         # Lookup the corresponding embedding vectors for each sample in X.
         x_embed = tf.nn.embedding_lookup(embedding, x)
         return x_embed
+
 
 def nce_loss(x_embed, y):
     with tf.device('/cpu:0'):
@@ -143,19 +152,27 @@ def nce_loss(x_embed, y):
         return loss
 
 # Evaluation.
+
+
 def evaluate(x_embed):
     with tf.device('/cpu:0'):
         # Compute the cosine similarity between input data embedding and every embedding vectors
         x_embed = tf.cast(x_embed, tf.float32)
         x_embed_norm = x_embed / tf.sqrt(tf.reduce_sum(tf.square(x_embed)))
-        embedding_norm = embedding / tf.sqrt(tf.reduce_sum(tf.square(embedding), 1, keepdims=True), tf.float32)
-        cosine_sim_op = tf.matmul(x_embed_norm, embedding_norm, transpose_b=True)
+        embedding_norm = embedding / \
+            tf.sqrt(tf.reduce_sum(tf.square(embedding),
+                                  1, keepdims=True), tf.float32)
+        cosine_sim_op = tf.matmul(
+            x_embed_norm, embedding_norm, transpose_b=True)
         return cosine_sim_op
+
 
 # Define the optimizer.
 optimizer = tf.optimizers.SGD(learning_rate)
 
 # Optimization process.
+
+
 def run_optimization(x, y):
     with tf.device('/cpu:0'):
         # Wrap computation inside a GradientTape for automatic differentiation.
@@ -167,7 +184,9 @@ def run_optimization(x, y):
         gradients = g.gradient(loss, [embedding, nce_weights, nce_biases])
 
         # Update W and b following gradients.
-        optimizer.apply_gradients(zip(gradients, [embedding, nce_weights, nce_biases]))
+        optimizer.apply_gradients(
+            zip(gradients, [embedding, nce_weights, nce_biases]))
+
 
 # Words for testing.
 x_test = np.array([word2id[w] for w in eval_words])
